@@ -1,12 +1,16 @@
 package org.benhallam;
 
+import org.benhallam.extentions.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 
 import java.util.List;
+
+import static org.benhallam.extentions.MyParameterResolver.VALUE_INJECTED_BY_PARAMETER_RESOLVER_EXTENSION;
 
 /**
  * PER_CLASS => A single instance will be created for executing all tests
@@ -15,6 +19,7 @@ import java.util.List;
  * The default behaviour is PER_METHOD
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith({MyTestInstancePostProcessor.class, MyCallbacks.class, MyTestExecutionExceptionHandler.class})
 class TranslatorTest {
     Translator translator;
 
@@ -89,7 +94,7 @@ class TranslatorTest {
             "1, 1",
             "2, 4",
             "3 , 9",
-            "  4  ,  16 "})
+            "  5  ,  16 "})
     void parametrizedCsvSource(int n) {
         System.err.println(n);
         Assertions.assertEquals(n * n, Math.pow(n, 2));
@@ -129,5 +134,35 @@ class TranslatorTest {
     void disabled() {
         Assertions.fail();
     }
+
+    /**
+     * ExecutionCondition Extension
+     */
+    @Test
+    @ExtendWith(MyExecutionCondition.class)
+    void disabledByExecutionCondition() {
+
+    }
+
+    /**
+     * ParameterResolver Extension
+     */
+    @Test
+    @ExtendWith(MyParameterResolver.class)
+    void parameterResolverExtension(String value, String value2) {
+        Assertions.assertEquals(VALUE_INJECTED_BY_PARAMETER_RESOLVER_EXTENSION, value);
+        Assertions.assertEquals(VALUE_INJECTED_BY_PARAMETER_RESOLVER_EXTENSION, value2);
+        System.out.println(value2);
+    }
+
+    /**
+     * TestExecutionExceptionHandler Extension
+     */
+    @Test
+//    @ExtendWith(MyTestExecutionExceptionHandler.class)
+    void testExecutionExceptionHandler() {
+        throw new MyCustomException();
+    }
+
 
 }
